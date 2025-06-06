@@ -63,6 +63,7 @@ const Dashboard: React.FC = () => {
     const [analysisType, setAnalysisType] = useState<string>('');
     const [timePeriod, setTimePeriod] = useState<string>('');
     const [isGenerating, setIsGenerating] = useState(false);
+    const [generatedPrompt, setGeneratedPrompt] = useState<string>('');
 
     useEffect(() => {
         const fetchData = async () => {
@@ -95,13 +96,16 @@ const Dashboard: React.FC = () => {
     const handleGenerateMenu = async () => {
         try {
             setIsGenerating(true);
+            setGeneratedPrompt(''); // Clear previous prompt
             const response = await axios.post('/api/menu/generate', {
                 analysisType,
                 timePeriod
             });
             console.log('Menu generation response:', response.data);
+            setGeneratedPrompt(response.data.prompt || '');
         } catch (error) {
             console.error('Error generating menu:', error);
+            setError('Failed to generate menu. Please try again.');
         } finally {
             setIsGenerating(false);
         }
@@ -186,8 +190,26 @@ const Dashboard: React.FC = () => {
                                     onClick={handleGenerateMenu}
                                     disabled={isGenerating}
                                 >
-                                    {isGenerating ? 'Generating...' : 'Generate Menu'}
+                                    {isGenerating ? (
+                                        <div className="flex items-center justify-center">
+                                            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                                            Generating...
+                                        </div>
+                                    ) : 'Generate Menu'}
                                 </button>
+                                
+                                {isGenerating && (
+                                    <div className="mt-4 p-4 bg-gray-50 rounded-md">
+                                        <p className="text-gray-600">Generating your menu...</p>
+                                    </div>
+                                )}
+                                
+                                {generatedPrompt && !isGenerating && (
+                                    <div className="mt-4 p-4 bg-gray-50 rounded-md">
+                                        <h3 className="text-lg font-semibold -2">Generated Prompt:</h3>
+                                        <p className="text-gray-700 whitespace-pre-wrap">{generatedPrompt}</p>
+                                    </div>
+                                )}
                             </div>
                         )}
                     </div>

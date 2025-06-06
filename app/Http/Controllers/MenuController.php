@@ -47,54 +47,54 @@ class MenuController extends Controller
         };
 
         return <<<PROMPT
-Create a detailed menu plan for {$timePeriod} with the following requirements:
+                    Create a detailed menu plan for {$timePeriod} with the following requirements:
 
-1. Menu Focus: {$focus}
-2. Number of meals to plan: {$mealsPerDay} (3 meals per day)
-3. Available Ingredients:
-{$ingredientsList}
+                    1. Menu Focus: {$focus}
+                    2. Number of meals to plan: {$mealsPerDay} (3 meals per day)
+                    3. Available Ingredients:
+                    {$ingredientsList}
 
-4. Existing Food Items:
-{$foodsList}
+                    4. Existing Food Items:
+                    {$foodsList}
 
-Please generate a menu that:
-- Uses the available ingredients efficiently
-- Creates a good mix of existing and new dishes
-- Ensures variety and balance in the menu
-- Considers the specified focus area
-- Includes breakfast, lunch, and dinner options
-- Provides a good mix of different cuisines and cooking styles
-- Takes into account seasonal availability
-- Ensures nutritional balance
+                    Please generate a menu that:
+                    - Uses the available ingredients efficiently
+                    - Creates a good mix of existing and new dishes
+                    - Ensures variety and balance in the menu
+                    - Considers the specified focus area
+                    - Includes breakfast, lunch, and dinner options
+                    - Provides a good mix of different cuisines and cooking styles
+                    - Takes into account seasonal availability
+                    - Ensures nutritional balance
 
-For each meal, please specify:
-- Main dish
-- Side dishes
-- Required ingredients
-- Preparation time
-- Difficulty level
-- Estimated cost per serving
+                    For each meal, please specify:
+                    - Main dish
+                    - Side dishes
+                    - Required ingredients
+                    - Preparation time
+                    - Difficulty level
+                    - Estimated cost per serving
 
-Please format the response as a JSON object with the following structure:
-{
-    "menu": [
-        {
-            "day": "Day 1",
-            "meals": [
-                {
-                    "type": "breakfast",
-                    "main_dish": "",
-                    "side_dishes": [],
-                    "ingredients": [],
-                    "preparation_time": "",
-                    "difficulty": "",
-                    "estimated_cost": ""
-                }
-            ]
-        }
-    ]
-}
-PROMPT;
+                    Please format the response as a JSON object with the following structure:
+                    {
+                        "menu": [
+                            {
+                                "day": "Day 1",
+                                "meals": [
+                                    {
+                                        "type": "breakfast",
+                                        "main_dish": "",
+                                        "side_dishes": [],
+                                        "ingredients": [],
+                                        "preparation_time": "",
+                                        "difficulty": "",
+                                        "estimated_cost": ""
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                    PROMPT;
     }
 
     public function generateMenu(Request $request): JsonResponse
@@ -108,7 +108,7 @@ PROMPT;
             $this->prompt = $this->generatePrompt($request->analysisType, $request->timePeriod);
 
             $response = OpenAI::chat()->create([
-                'model' => 'gpt-4',
+                'model' => 'gpt-3.5-turbo',
                 'messages' => [
                     [
                         'role' => 'system',
