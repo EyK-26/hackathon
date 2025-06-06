@@ -104,10 +104,10 @@ const Dashboard: React.FC = () => {
             console.log('Full menu generation response:', response);
             console.log('Response data:', response.data);
             
-            if (response.data && response.data.data && response.data.data.prompt) {
-                setGeneratedPrompt(response.data.data.prompt);
+            if (response.data && response.data.data && response.data.data.response) {
+                setGeneratedPrompt(response.data.data.response);
             } else {
-                console.warn('No prompt found in response:', response.data);
+                console.warn('No response found in data:', response.data);
                 setError('Generated menu is empty. Please try again.');
             }
         } catch (error) {

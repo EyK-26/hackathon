@@ -132,7 +132,7 @@ class MenuController extends Controller
                     'timePeriod' => $request->timePeriod,
                     'status' => 'generated',
                     'menu' => $menuData['menu'] ?? [],
-                    'prompt' => $this->prompt
+                    'response' => $response->choices[0]->message->content
                 ]
             ]);
         } catch (\Exception $e) {
