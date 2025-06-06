@@ -47,12 +47,14 @@ interface Category {
 interface MenuItem {
     name: string;
     ingredients: {
-        id: string;
+        id: number;
         name: string;
         amount: string;
         price: string;
     }[];
     estimated_cost: string;
+    preparation_time: string;
+    difficulty_level: string;
 }
 
 interface MenuDay {
@@ -62,6 +64,16 @@ interface MenuDay {
 
 interface MenuResponse {
     menu: MenuDay[];
+}
+
+interface ApiResponse {
+    message: string;
+    data: {
+        analysisType: string;
+        timePeriod: string;
+        status: string;
+        menu: MenuDay[];
+    };
 }
 
 interface Analysis {
@@ -117,20 +129,13 @@ const Dashboard: React.FC = () => {
         try {
             setIsGenerating(true);
             setError(null);
-            const response = await axios.post('/api/menu/generate', {
+            const response = await axios.post<ApiResponse>('/api/menu/generate', {
                 analysisType,
                 timePeriod
             });
-            
-            if (response.data && response.data.data && response.data.data.menu) {
-                // Parse the menu data from the response
-                const menuData = JSON.parse(response.data.data.response);
-                if (menuData && menuData.menu) {
-                    setGeneratedMenu(menuData);
-                } else {
-                    console.error('Invalid menu data structure:', menuData);
-                    setError('Generated menu data is invalid. Please try again.');
-                }
+
+            if (response.data?.data?.menu) {
+                setGeneratedMenu({ menu: response.data.data.menu });
             } else {
                 console.error('Invalid response structure:', response.data);
                 setError('Generated menu data is invalid. Please try again.');
@@ -251,7 +256,6 @@ const Dashboard: React.FC = () => {
                         {generatedMenu && (
                             <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-8">
                                 <div className="p-6">
-                                    <h2 className="text-2xl font-semibold mb-4 text-gray-900">Generated Menu</h2>
                                     <div className="space-y-6">
                                         {generatedMenu.menu.map((day, dayIndex) => (
                                             <div key={dayIndex} className="border rounded-lg p-4">
@@ -265,14 +269,16 @@ const Dashboard: React.FC = () => {
                                                                 <ul className="list-disc list-inside">
                                                                     {meal.ingredients.map((ingredient, ingIndex) => (
                                                                         <li key={ingIndex} className="text-gray-700">
-                                                                            {ingredient.name} - Amount: {ingredient.amount}, Price: ${ingredient.price}
+                                                                            {ingredient.name} - Amount: {ingredient.amount}, Price: {ingredient.price}
                                                                         </li>
                                                                     ))}
                                                                 </ul>
                                                             </div>
-                                                            <p className="text-sm text-gray-700">
-                                                                Estimated Cost: ${meal.estimated_cost}
-                                                            </p>
+                                                            <div className="grid grid-cols-2 gap-4 text-sm text-gray-700">
+                                                                <p>Preparation Time: {meal.preparation_time}</p>
+                                                                <p>Difficulty: {meal.difficulty_level}</p>
+                                                                <p>Estimated Cost: {meal.estimated_cost}</p>
+                                                            </div>
                                                         </div>
                                                     ))}
                                                 </div>
