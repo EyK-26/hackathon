@@ -60,6 +60,9 @@ const Dashboard: React.FC = () => {
     const [analysis, setAnalysis] = useState<Analysis | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [analysisType, setAnalysisType] = useState<string>('');
+    const [timePeriod, setTimePeriod] = useState<string>('');
+    const [isGenerating, setIsGenerating] = useState(false);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -89,6 +92,21 @@ const Dashboard: React.FC = () => {
         fetchData();
     }, []);
 
+    const handleGenerateMenu = async () => {
+        try {
+            setIsGenerating(true);
+            const response = await axios.post('/api/menu/generate', {
+                analysisType,
+                timePeriod
+            });
+            console.log('Menu generation response:', response.data);
+        } catch (error) {
+            console.error('Error generating menu:', error);
+        } finally {
+            setIsGenerating(false);
+        }
+    };
+
     if (loading) {
         return <div className="flex items-center justify-center min-h-screen">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
@@ -107,23 +125,71 @@ const Dashboard: React.FC = () => {
 
                 {/* Analysis Section */}
                 <div className="mb-8 p-6 bg-white rounded-lg shadow-md">
-                    <h2 className="text-2xl font-semibold mb-4">AI Analysis</h2>
+                    <h2 className="text-2xl font-semibold text-black mb-4">AI Analysis</h2>
                     <p className="text-gray-700">{analysis?.analysis}</p>
                 </div>
 
                 {/* Stats Overview */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                     <div className="bg-white p-6 rounded-lg shadow-md">
-                        <h3 className="text-xl font-semibold mb-2">Foods</h3>
-                        <p className="text-3xl font-bold text-blue-600">{foods.length}</p>
+                        <p className="text-3xl font-bold text-blue-600">{`Foods: ${foods.length}`}</p>
                     </div>
                     <div className="bg-white p-6 rounded-lg shadow-md">
-                        <h3 className="text-xl font-semibold mb-2">Ingredients</h3>
-                        <p className="text-3xl font-bold text-green-600">{ingredients.length}</p>
+                        <p className="text-3xl font-bold text-green-600">{`Ingredients: ${ingredients.length}`}</p>
                     </div>
                     <div className="bg-white p-6 rounded-lg shadow-md">
-                        <h3 className="text-xl font-semibold mb-2">Categories</h3>
-                        <p className="text-3xl font-bold text-purple-600">{categories.length}</p>
+                        <p className="text-3xl font-bold text-purple-600">{`Categories: ${categories.length}`}</p>
+                    </div>
+                </div>
+
+                {/* Analysis Type Selector */}
+                <div className="mb-8">
+                    <div className="bg-white p-6 rounded-lg shadow-md">
+                        <label htmlFor="analysisType" className="block text-sm font-medium text-gray-700 mb-2">
+                            Wished Menu Type
+                        </label>
+                        <select
+                            id="analysisType"
+                            className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md bg-gray-500"
+                            value={analysisType}
+                            onChange={(e) => setAnalysisType(e.target.value)}
+                        >
+                            <option value="">Select Analysis Type</option>
+                            <option value="eco-friendly">Eco-friendly</option>
+                            <option value="customer-pleaser">Customer Pleaser</option>
+                            <option value="cost-effective">Cost Effective</option>
+                            <option value="surprise-me">Surprise Me</option>
+                        </select>
+                        {analysisType && (
+                            <div className="mt-4">
+                                <label htmlFor="timePeriod" className="block text-sm font-medium text-gray-700 mb-2">
+                                    Select Time Period
+                                </label>
+                                <select
+                                    id="timePeriod"
+                                    className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md bg-gray-500"
+                                    value={timePeriod}
+                                    onChange={(e) => setTimePeriod(e.target.value)}
+                                >
+                                    <option value="">Select Time Period</option>
+                                    <option value="1-week">1 Week</option>
+                                    <option value="2-weeks">2 Weeks</option>
+                                    <option value="1-month">1 Month</option>
+                                </select>
+                            </div>
+                        )}
+                        {analysisType && timePeriod && (
+                            <div className="mt-6">
+                                <button
+                                    type="button"
+                                    className="w-full bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                    onClick={handleGenerateMenu}
+                                    disabled={isGenerating}
+                                >
+                                    {isGenerating ? 'Generating...' : 'Generate Menu'}
+                                </button>
+                            </div>
+                        )}
                     </div>
                 </div>
 

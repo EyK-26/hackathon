@@ -50,6 +50,6 @@ class AnalysisController extends Controller
         $categoryCount = count($data['categories']);
 
         return "Analysis of {$foodCount} foods, {$ingredientCount} ingredients, and {$categoryCount} categories. " .
-               "This is a placeholder for your AI analysis. Replace this with actual AI integration.";
+               "Please generate a menu based on the following data below: ";
     }
 } 

@@ -6,6 +6,7 @@ use App\Http\Controllers\FoodController;
 use App\Http\Controllers\IngredientController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\AnalysisController;
+use App\Http\Controllers\MenuController;
 
 /*
 |--------------------------------------------------------------------------
@@ -26,4 +27,8 @@ Route::get('/categories', [CategoryController::class, 'index']);
 Route::get('/categories/{category}', [CategoryController::class, 'show']);
 
 // Analysis route
-Route::get('/analyze', [AnalysisController::class, 'analyze']); 
+Route::get('/analyze', [AnalysisController::class, 'analyze']);
+Route::get('/analysis', [AnalysisController::class, 'index']);
+
+// Menu Generation
+Route::post('/menu/generate', [MenuController::class, 'generateMenu']); 
