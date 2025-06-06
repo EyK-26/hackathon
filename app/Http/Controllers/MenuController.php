@@ -52,7 +52,7 @@ class MenuController extends Controller
         };
 
         return <<<PROMPT
-                    If the promt is too long to generate or there's a risk to maxs out , please return the first 1000 characters of the prompt.
+                    If the promt is too long to generate or there's a risk to max out, please return the first 1000 characters of the prompt.
                     And if you decide to return the first 1000 characters please do not forget to fill the menu array below. It's mapped on the frontend.
                     Create a detailed menu plan for {$timePeriod} with the following requirements:
 
