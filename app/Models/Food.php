@@ -33,8 +33,6 @@ class Food extends Model
      */
     public function ingredients()
     {
-        return $this->belongsToMany(Ingredient::class, 'food_ingredient')
-            ->withPivot('quantity', 'unit')
-            ->withTimestamps();
+        return $this->belongsToMany(Ingredient::class, 'food_ingredient');
     }
 }

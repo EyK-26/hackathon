@@ -20,9 +20,6 @@ class UpdateFoodsAndIngredientsSeeder extends Seeder
             $pivotData = $randomIngredients->mapWithKeys(function ($ingredient) {
                 return [$ingredient->id => [
                     'quantity' => rand(1, 500) / 100,
-                    'unit' => $ingredient->unit,
-                    'created_at' => now(),
-                    'updated_at' => now()
                 ]];
             })->toArray();
 
@@ -32,9 +29,6 @@ class UpdateFoodsAndIngredientsSeeder extends Seeder
                         'food_id' => $food->id,
                         'ingredient_id' => $ingredientId,
                         'quantity' => $data['quantity'],
-                        'unit' => $data['unit'],
-                        'created_at' => $data['created_at'],
-                        'updated_at' => $data['updated_at']
                     ];
                 })->values()->toArray()
             );
