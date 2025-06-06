@@ -15,11 +15,9 @@ return new class extends Migration
             $table->id();
             $table->foreignId('food_id')->constrained('foods')->onDelete('cascade');
             $table->foreignId('ingredient_id')->constrained('ingredients')->onDelete('cascade');
-            $table->decimal('quantity', 8, 2)->comment('amount of ingredient needed');
-            $table->string('unit')->comment('unit of measurement (g, kg, ml, l, etc.)');
+            $table->decimal('quantity', 8, 2);
+            $table->string('unit');
             $table->timestamps();
-
-            $table->unique(['food_id', 'ingredient_id']);
         });
     }
 

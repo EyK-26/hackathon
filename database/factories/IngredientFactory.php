@@ -26,13 +26,9 @@ class IngredientFactory extends Factory
     {
         return [
             'name' => $this->faker->unique()->word(),
-            'description' => $this->faker->sentence(),
-            'price' => $this->faker->randomFloat(2, 0.50, 50.00),
-            'image' => $this->faker->imageUrl(640, 480, 'food'),
-            'category_id' => $this->faker->numberBetween(1, 5),
-            'is_active' => $this->faker->boolean(80), // 80% chance of being active
-            'longevity' => $this->faker->numberBetween(1, 10), // days
-            'amount' => $this->faker->randomFloat(2, 0.1, 5.0), // in kg or liters
+            'price' => $this->faker->randomFloat(2, 0.50, 20.00),
+            'amount' => $this->faker->randomFloat(2, 0.1, 5.0),
+            'unit' => $this->faker->randomElement(['kg', 'g', 'l', 'ml', 'pcs']),
         ];
     }
 } 

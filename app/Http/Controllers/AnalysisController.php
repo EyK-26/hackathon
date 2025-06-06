@@ -4,9 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Food;
 use App\Models\Ingredient;
-use App\Models\Category;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 class AnalysisController extends Controller
 {
@@ -15,21 +13,19 @@ class AnalysisController extends Controller
      */
     public function analyze(): JsonResponse
     {
-        // Fetch all data with relationships
-        $foods = Food::with(['ingredients', 'category'])->get();
-        $ingredients = Ingredient::with(['foods', 'category'])->get();
-        $categories = Category::with(['foods', 'ingredients'])->get();
+        $foods = Food::with(['ingredients'])->get();
+        $ingredients = Ingredient::with(['foods'])->get();
 
-        // Prepare data for analysis
         $data = [
             'foods' => $foods,
-            'ingredients' => $ingredients,
-            'categories' => $categories,
+            'ingredients' => $ingredients
         ];
 
-        // TODO: Add your AI analysis logic here
-        // This is where you'll integrate with your AI service
-        $analysis = $this->performAnalysis($data);
+        $foodCount = count($data['foods']);
+        $ingredientCount = count($data['ingredients']);
+
+        $analysis = "Analysis of {$foodCount} foods and {$ingredientCount} ingredients. " .
+            "The menu generation system is ready to create personalized meal plans based on your preferences.";
 
         return response()->json([
             'analysis' => $analysis,

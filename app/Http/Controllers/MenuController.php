@@ -15,23 +15,20 @@ class MenuController extends Controller
     private function generatePrompt(string $analysisType, string $timePeriod): string
     {
         // Fetch all available ingredients and foods
-        $ingredients = Ingredient::with('category')->get();
-        $foods = Food::with(['category', 'ingredients'])->get();
+        $ingredients = Ingredient::with('foods')->get();
+        $foods = Food::with(['ingredients'])->get();
 
         // Format ingredients list
-        $ingredientsList = $ingredients->slice(0, 6)->map(function ($ingredient) {
-            return "- {$ingredient->name} (ID: {$ingredient->id}, Category: {$ingredient->category->name})
+        $ingredientsList = $ingredients->map(function ($ingredient) {
+            return "- {$ingredient->name} (ID: {$ingredient->id})
                 Price: \${$ingredient->price}
-                Amount: {$ingredient->amount}
-                Longevity: {$ingredient->longevity} days";
-        })->join("\n\n");
+                Amount: {$ingredient->amount} {$ingredient->unit}";
+        })->join("\n");
 
         // Format foods list
-        $foodsList = $foods->slice(0, 6)->map(function ($food) {
-            $ingredients = $food->ingredients->map(function ($ingredient) {
-                return "{$ingredient->name} (ID: {$ingredient->id})";
-            })->join(', ');
-            return "- {$food->name} (ID: {$food->id}, Category: {$food->category->name}): {$ingredients}";
+        $foodsList = $foods->map(function ($food) {
+            $ingredients = $food->ingredients->pluck('name')->join(', ');
+            return "- {$food->name} (ID: {$food->id}): {$ingredients}";
         })->join("\n");
 
         // Determine menu focus based on analysis type

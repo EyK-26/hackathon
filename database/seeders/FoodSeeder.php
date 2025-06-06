@@ -3,26 +3,37 @@
 namespace Database\Seeders;
 
 use App\Models\Food;
-use App\Models\Ingredient;
 use Illuminate\Database\Seeder;
 
 class FoodSeeder extends Seeder
 {
     public function run(): void
     {
-        $foods = Food::factory()->count(30)->create();
+        $foods = [
+            [
+                'name' => 'Pasta Carbonara',
+                'price' => 15.99,
+            ],
+            [
+                'name' => 'Chicken Curry',
+                'price' => 18.99,
+            ],
+            [
+                'name' => 'Vegetable Stir Fry',
+                'price' => 14.99,
+            ],
+            [
+                'name' => 'Beef Steak',
+                'price' => 24.99,
+            ],
+            [
+                'name' => 'Salmon Fillet',
+                'price' => 22.99,
+            ],
+        ];
 
-        // Attach 3-7 random ingredients to each food
-        $foods->each(function ($food) {
-            $randomIngredients = Ingredient::inRandomOrder()->take(rand(3, 7))->get();
-            $food->ingredients()->attach(
-                $randomIngredients->mapWithKeys(function ($ingredient) {
-                    return [$ingredient->id => [
-                        'quantity' => rand(1, 500) / 100,
-                        'unit' => collect(['g', 'kg', 'ml', 'l'])->random()
-                    ]];
-                })->toArray()
-            );
-        });
+        foreach ($foods as $food) {
+            Food::create($food);
+        }
     }
 } 

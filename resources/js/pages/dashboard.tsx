@@ -22,7 +22,6 @@ interface Food {
     category_id: number;
     is_active: boolean;
     ingredients: Ingredient[];
-    category: Category;
 }
 
 interface Ingredient {
@@ -35,13 +34,6 @@ interface Ingredient {
     is_active: boolean;
     longevity: number;
     amount: number;
-    category: Category;
-}
-
-interface Category {
-    id: number;
-    name: string;
-    description: string;
 }
 
 interface BaseMenuItem {
@@ -97,7 +89,6 @@ interface Analysis {
     data: {
         foods: Food[];
         ingredients: Ingredient[];
-        categories: Category[];
     };
 }
 
@@ -109,7 +100,6 @@ function isDetailedMenuItem(item: MenuItem): item is DetailedMenuItem {
 const Dashboard: React.FC = () => {
     const [foods, setFoods] = useState<Food[]>([]);
     const [ingredients, setIngredients] = useState<Ingredient[]>([]);
-    const [categories, setCategories] = useState<Category[]>([]);
     const [analysis, setAnalysis] = useState<Analysis | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -123,16 +113,14 @@ const Dashboard: React.FC = () => {
             try {
                 setLoading(true);
                 // Fetch all data in parallel
-                const [foodsRes, ingredientsRes, categoriesRes, analysisRes] = await Promise.all([
+                const [foodsRes, ingredientsRes, analysisRes] = await Promise.all([
                     axios.get('/api/foods'),
                     axios.get('/api/ingredients'),
-                    axios.get('/api/categories'),
                     axios.get('/api/analyze')
                 ]);
 
                 setFoods(foodsRes.data);
                 setIngredients(ingredientsRes.data);
-                setCategories(categoriesRes.data);
                 setAnalysis(analysisRes.data);
                 setError(null);
             } catch (err) {
@@ -202,15 +190,12 @@ const Dashboard: React.FC = () => {
                         </div>
 
                         {/* Stats Overview */}
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                             <div className="bg-white p-6 rounded-lg shadow-md">
                                 <p className="text-3xl font-bold text-blue-600">{`Foods: ${foods.length}`}</p>
                             </div>
                             <div className="bg-white p-6 rounded-lg shadow-md">
                                 <p className="text-3xl font-bold text-green-600">{`Ingredients: ${ingredients.length}`}</p>
-                            </div>
-                            <div className="bg-white p-6 rounded-lg shadow-md">
-                                <p className="text-3xl font-bold text-purple-600">{`Categories: ${categories.length}`}</p>
                             </div>
                         </div>
 

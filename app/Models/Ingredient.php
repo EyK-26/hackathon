@@ -17,34 +17,10 @@ class Ingredient extends Model
      */
     protected $fillable = [
         'name',
-        'description',
         'price',
-        'image',
-        'category_id',
-        'is_active',
-        'longevity',
         'amount',
-        'created_at',
-        'updated_at',
+        'unit',
     ];
-
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
-     */
-    protected $hidden = [
-        'created_at',
-        'updated_at',
-    ];
-
-    /**
-     * Get the category that owns the ingredient.
-     */
-    public function category()
-    {
-        return $this->belongsTo(Category::class);
-    }
 
     /**
      * Get the foods that use this ingredient.

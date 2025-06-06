@@ -25,13 +25,8 @@ class FoodFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => $this->faker->unique()->words(3, true),
-            'description' => $this->faker->paragraph(),
-            'price' => $this->faker->randomFloat(2, 5.00, 100.00),
-            'image' => $this->faker->imageUrl(800, 600, 'food'),
-            'popularity' => $this->faker->numberBetween(0, 10),
-            'category_id' => $this->faker->numberBetween(1, 5),
-            'is_active' => $this->faker->boolean(90), // 90% chance of being active
+            'name' => $this->faker->unique()->word(),
+            'price' => $this->faker->randomFloat(2, 5.00, 50.00),
         ];
     }
 } 

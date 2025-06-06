@@ -13,7 +13,7 @@ class FoodController extends Controller
      */
     public function index(): JsonResponse
     {
-        $foods = Food::with(['ingredients', 'category'])->get();
+        $foods = Food::with(['ingredients'])->get();
         return response()->json($foods);
     }
 
@@ -22,7 +22,7 @@ class FoodController extends Controller
      */
     public function show(Food $food): JsonResponse
     {
-        $food->load(['ingredients', 'category']);
+        $food->load(['ingredients']);
         return response()->json($food);
     }
 
