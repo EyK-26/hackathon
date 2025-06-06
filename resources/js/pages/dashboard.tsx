@@ -101,11 +101,23 @@ const Dashboard: React.FC = () => {
                 analysisType,
                 timePeriod
             });
-            console.log('Menu generation response:', response.data);
-            setGeneratedPrompt(response.data.prompt || '');
+            console.log('Full menu generation response:', response);
+            console.log('Response data:', response.data);
+            
+            if (response.data && response.data.data && response.data.data.prompt) {
+                setGeneratedPrompt(response.data.data.prompt);
+            } else {
+                console.warn('No prompt found in response:', response.data);
+                setError('Generated menu is empty. Please try again.');
+            }
         } catch (error) {
             console.error('Error generating menu:', error);
-            setError('Failed to generate menu. Please try again.');
+            if (axios.isAxiosError(error)) {
+                console.error('Error response:', error.response?.data);
+                setError(`Failed to generate menu: ${error.response?.data?.message || error.message}`);
+            } else {
+                setError('Failed to generate menu. Please try again.');
+            }
         } finally {
             setIsGenerating(false);
         }

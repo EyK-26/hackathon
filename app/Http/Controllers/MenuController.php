@@ -131,7 +131,8 @@ class MenuController extends Controller
                     'analysisType' => $request->analysisType,
                     'timePeriod' => $request->timePeriod,
                     'status' => 'generated',
-                    'menu' => $menuData['menu'] ?? []
+                    'menu' => $menuData['menu'] ?? [],
+                    'prompt' => $this->prompt
                 ]
             ]);
         } catch (\Exception $e) {
