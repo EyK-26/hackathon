@@ -47,6 +47,22 @@ class MenuController extends Controller
             '1-month' => 30,
             default => 7
         };
+        
+        // Fetch sales from the last $mealsPerDay days
+        $soldIngredients = Sale::where('sold_at', '>=', Carbon::now()->subDays($mealsPerDay))->get()
+            ->flatMap(function ($sale) {
+                return $sale->food->ingredients->map(function ($ingredient) use ($sale) {
+                    return [
+                        'id' => $ingredient->id,
+                        'name' => $ingredient->name,
+                        'quantity' => $ingredient->pivot->quantity * $sale->quantity,
+                        'unit' => $ingredient->pivot->unit,
+                    ];
+                });
+            });
+
+        // TODO count quantity of remaining ingredients, 
+        // Ingredients in DB minus sold ingredients
 
         return <<<PROMPT
                     If the promt is too long to generate or there's a risk to max out, please return the first 1000 characters of the prompt.
