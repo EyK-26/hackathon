@@ -20,13 +20,18 @@ class MenuController extends Controller
 
         // Format ingredients list
         $ingredientsList = $ingredients->map(function ($ingredient) {
-            return "- {$ingredient->name} ({$ingredient->category->name})";
-        })->join("\n");
+            return "- {$ingredient->name} (ID: {$ingredient->id}, Category: {$ingredient->category->name})
+                Price: \${$ingredient->price}
+                Amount: {$ingredient->amount}
+                Longevity: {$ingredient->longevity} days";
+        })->join("\n\n");
 
         // Format foods list
         $foodsList = $foods->map(function ($food) {
-            $ingredients = $food->ingredients->pluck('name')->join(', ');
-            return "- {$food->name} ({$food->category->name}): {$ingredients}";
+            $ingredients = $food->ingredients->map(function ($ingredient) {
+                return "{$ingredient->name} (ID: {$ingredient->id})";
+            })->join(', ');
+            return "- {$food->name} (ID: {$food->id}, Category: {$food->category->name}): {$ingredients}";
         })->join("\n");
 
         // Determine menu focus based on analysis type
@@ -40,21 +45,21 @@ class MenuController extends Controller
 
         // Determine meal frequency based on time period
         $mealsPerDay = match($timePeriod) {
-            '1-week' => 21, // 3 meals per day for 7 days
-            '2-weeks' => 42, // 3 meals per day for 14 days
-            '1-month' => 90, // 3 meals per day for 30 days
-            default => 21
+            '1-week' => 7,
+            '2-weeks' => 14,
+            '1-month' => 30,
+            default => 7
         };
 
         return <<<PROMPT
                     Create a detailed menu plan for {$timePeriod} with the following requirements:
 
                     1. Menu Focus: {$focus}
-                    2. Number of meals to plan: {$mealsPerDay} (3 meals per day)
+                    2. Number of meals to plan: {$mealsPerDay}
                     3. Available Ingredients:
                     {$ingredientsList}
 
-                    4. Existing Food Items:
+                    4. I don't want to create again existing food items. Existing Food Items that we already have in the menu are:
                     {$foodsList}
 
                     Please generate a menu that:
@@ -62,7 +67,6 @@ class MenuController extends Controller
                     - Creates a good mix of existing and new dishes
                     - Ensures variety and balance in the menu
                     - Considers the specified focus area
-                    - Includes breakfast, lunch, and dinner options
                     - Provides a good mix of different cuisines and cooking styles
                     - Takes into account seasonal availability
                     - Ensures nutritional balance
@@ -82,12 +86,15 @@ class MenuController extends Controller
                                 "day": "Day 1",
                                 "meals": [
                                     {
-                                        "type": "breakfast",
-                                        "main_dish": "",
-                                        "side_dishes": [],
-                                        "ingredients": [],
-                                        "preparation_time": "",
-                                        "difficulty": "",
+                                        "name": "",
+                                        "ingredients": [
+                                            {
+                                                "id": "" // id of the ingredient in the database,
+                                                "name": "",
+                                                "amount": "",
+                                                "price": ""
+                                            }
+                                        ],
                                         "estimated_cost": ""
                                     }
                                 ]

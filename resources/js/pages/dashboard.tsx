@@ -44,6 +44,26 @@ interface Category {
     description: string;
 }
 
+interface MenuItem {
+    name: string;
+    ingredients: {
+        id: string;
+        name: string;
+        amount: string;
+        price: string;
+    }[];
+    estimated_cost: string;
+}
+
+interface MenuDay {
+    day: string;
+    meals: MenuItem[];
+}
+
+interface MenuResponse {
+    menu: MenuDay[];
+}
+
 interface Analysis {
     analysis: string;
     data: {
@@ -63,7 +83,7 @@ const Dashboard: React.FC = () => {
     const [analysisType, setAnalysisType] = useState<string>('');
     const [timePeriod, setTimePeriod] = useState<string>('');
     const [isGenerating, setIsGenerating] = useState(false);
-    const [generatedPrompt, setGeneratedPrompt] = useState<string>('');
+    const [generatedMenu, setGeneratedMenu] = useState<MenuResponse | null>(null);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -96,28 +116,14 @@ const Dashboard: React.FC = () => {
     const handleGenerateMenu = async () => {
         try {
             setIsGenerating(true);
-            setGeneratedPrompt(''); // Clear previous prompt
             const response = await axios.post('/api/menu/generate', {
                 analysisType,
                 timePeriod
             });
-            console.log('Full menu generation response:', response);
-            console.log('Response data:', response.data);
-            
-            if (response.data && response.data.data && response.data.data.response) {
-                setGeneratedPrompt(response.data.data.response);
-            } else {
-                console.warn('No response found in data:', response.data);
-                setError('Generated menu is empty. Please try again.');
-            }
-        } catch (error) {
-            console.error('Error generating menu:', error);
-            if (axios.isAxiosError(error)) {
-                console.error('Error response:', error.response?.data);
-                setError(`Failed to generate menu: ${error.response?.data?.message || error.message}`);
-            } else {
-                setError('Failed to generate menu. Please try again.');
-            }
+            setGeneratedMenu(response.data.data.menu);
+        } catch (err) {
+            setError('Failed to generate menu. Please try again later.');
+            console.error('Error generating menu:', err);
         } finally {
             setIsGenerating(false);
         }
@@ -158,80 +164,84 @@ const Dashboard: React.FC = () => {
                     </div>
                 </div>
 
-                {/* Analysis Type Selector */}
-                <div className="mb-8">
-                    <div className="bg-white p-6 rounded-lg shadow-md">
-                        <label htmlFor="analysisType" className="block text-sm font-medium text-gray-700 mb-2">
-                            Wished Menu Type
-                        </label>
-                        <select
-                            id="analysisType"
-                            className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md bg-gray-500"
-                            value={analysisType}
-                            onChange={(e) => setAnalysisType(e.target.value)}
-                        >
-                            <option value="">Select Analysis Type</option>
-                            <option value="eco-friendly">Eco-friendly</option>
-                            <option value="customer-pleaser">Customer Pleaser</option>
-                            <option value="cost-effective">Cost Effective</option>
-                            <option value="surprise-me">Surprise Me</option>
-                        </select>
-                        {analysisType && (
-                            <div className="mt-4">
-                                <label htmlFor="timePeriod" className="block text-sm font-medium text-gray-700 mb-2">
-                                    Select Time Period
-                                </label>
-                                <select
-                                    id="timePeriod"
-                                    className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md bg-gray-500"
-                                    value={timePeriod}
-                                    onChange={(e) => setTimePeriod(e.target.value)}
-                                >
-                                    <option value="">Select Time Period</option>
-                                    <option value="1-week">1 Week</option>
-                                    <option value="2-weeks">2 Weeks</option>
-                                    <option value="1-month">1 Month</option>
-                                </select>
-                            </div>
-                        )}
-                        {analysisType && timePeriod && (
-                            <div className="mt-6">
-                                <button
-                                    type="button"
-                                    className="w-full bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                    onClick={handleGenerateMenu}
-                                    disabled={isGenerating}
-                                >
-                                    {isGenerating ? (
-                                        <div className="flex items-center justify-center">
-                                            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                                            Generating...
-                                        </div>
-                                    ) : 'Generate Menu'}
-                                </button>
-                                
-                                {isGenerating && (
-                                    <div className="mt-4 p-4 bg-gray-50 rounded-md">
-                                        <p className="text-gray-600">Generating your menu...</p>
-                                    </div>
-                                )}
-                                
-                                {generatedPrompt && !isGenerating && (
-                                    <div className="mt-4 p-4 bg-gray-50 rounded-md">
-                                        <h3 className="text-lg font-semibold -2">Generated Prompt:</h3>
-                                        <p className="text-gray-700 whitespace-pre-wrap">{generatedPrompt}</p>
-                                    </div>
-                                )}
-                            </div>
-                        )}
+                {/* Menu Generation Section */}
+                <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-8">
+                    <div className="p-6">
+                        <h2 className="text-2xl font-semibold mb-4">Generate Menu</h2>
+                        <div className="flex gap-4 mb-4">
+                            <select
+                                value={analysisType}
+                                onChange={(e) => setAnalysisType(e.target.value)}
+                                className="rounded-md border-gray-300"
+                            >
+                                <option value="">Select Analysis Type</option>
+                                <option value="eco-friendly">Eco-Friendly</option>
+                                <option value="customer-pleaser">Customer Pleaser</option>
+                                <option value="cost-effective">Cost-Effective</option>
+                                <option value="surprise-me">Surprise Me</option>
+                            </select>
+                            <select
+                                value={timePeriod}
+                                onChange={(e) => setTimePeriod(e.target.value)}
+                                className="rounded-md border-gray-300"
+                            >
+                                <option value="">Select Time Period</option>
+                                <option value="1-week">1 Week</option>
+                                <option value="2-weeks">2 Weeks</option>
+                                <option value="1-month">1 Month</option>
+                            </select>
+                            <button
+                                onClick={handleGenerateMenu}
+                                disabled={isGenerating || !analysisType || !timePeriod}
+                                className="bg-blue-500 text-white px-4 py-2 rounded-md disabled:opacity-50"
+                            >
+                                {isGenerating ? 'Generating...' : 'Generate Menu'}
+                            </button>
+                        </div>
                     </div>
                 </div>
+
+                {/* Generated Menu Display */}
+                {generatedMenu && (
+                    <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-8">
+                        <div className="p-6">
+                            <h2 className="text-2xl font-semibold mb-4">Generated Menu</h2>
+                            <div className="space-y-6">
+                                {generatedMenu.menu.map((day, dayIndex) => (
+                                    <div key={dayIndex} className="border rounded-lg p-4">
+                                        <h3 className="text-xl font-semibold mb-3">{day.day}</h3>
+                                        <div className="space-y-4">
+                                            {day.meals.map((meal, mealIndex) => (
+                                                <div key={mealIndex} className="bg-gray-50 p-4 rounded-md">
+                                                    <h4 className="text-lg font-medium mb-2">{meal.name}</h4>
+                                                    <div className="mb-2">
+                                                        <h5 className="font-medium">Ingredients:</h5>
+                                                        <ul className="list-disc list-inside">
+                                                            {meal.ingredients.map((ingredient, ingIndex) => (
+                                                                <li key={ingIndex}>
+                                                                    {ingredient.name} - Amount: {ingredient.amount}, Price: ${ingredient.price}
+                                                                </li>
+                                                            ))}
+                                                        </ul>
+                                                    </div>
+                                                    <p className="text-sm text-gray-600">
+                                                        Estimated Cost: ${meal.estimated_cost}
+                                                    </p>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 {/* Recent Foods */}
                 <div className="mb-8">
                     <h2 className="text-2xl font-semibold mb-4">Recent Foods</h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {foods.slice(0, 6).map((food) => (
+                        {foods.map((food) => (
                             <div key={food.id} className="bg-white p-6 rounded-lg shadow-md">
                                 <h3 className="text-xl font-semibold mb-2">{food.name}</h3>
                                 <p className="text-gray-600 mb-2">{food.description}</p>
@@ -245,13 +255,21 @@ const Dashboard: React.FC = () => {
                 <div>
                     <h2 className="text-2xl font-semibold mb-4">Recent Ingredients</h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {ingredients.slice(0, 6).map((ingredient) => (
+                        {ingredients.map((ingredient) => (
                             <div key={ingredient.id} className="bg-white p-6 rounded-lg shadow-md">
                                 <h3 className="text-xl font-semibold mb-2">{ingredient.name}</h3>
                                 <p className="text-gray-600 mb-2">{ingredient.description}</p>
-                                <p className="text-green-600 font-semibold">
-                                    Amount: {ingredient.amount} units
-                                </p>
+                                <div className="space-y-1">
+                                    <p className="text-green-600 font-semibold">
+                                        Amount: {ingredient.amount} units
+                                    </p>
+                                    <p className="text-blue-600 font-semibold">
+                                        Price: ${ingredient.price}
+                                    </p>
+                                    <p className="text-gray-600">
+                                        Longevity: {ingredient.longevity} days
+                                    </p>
+                                </div>
                             </div>
                         ))}
                     </div>
