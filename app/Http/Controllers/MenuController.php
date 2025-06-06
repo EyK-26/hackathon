@@ -19,7 +19,7 @@ class MenuController extends Controller
         $foods = Food::with(['category', 'ingredients'])->get();
 
         // Format ingredients list
-        $ingredientsList = $ingredients->map(function ($ingredient) {
+        $ingredientsList = $ingredients->slice(0, 6)->map(function ($ingredient) {
             return "- {$ingredient->name} (ID: {$ingredient->id}, Category: {$ingredient->category->name})
                 Price: \${$ingredient->price}
                 Amount: {$ingredient->amount}
@@ -27,7 +27,7 @@ class MenuController extends Controller
         })->join("\n\n");
 
         // Format foods list
-        $foodsList = $foods->map(function ($food) {
+        $foodsList = $foods->slice(0, 6)->map(function ($food) {
             $ingredients = $food->ingredients->map(function ($ingredient) {
                 return "{$ingredient->name} (ID: {$ingredient->id})";
             })->join(', ');
@@ -52,6 +52,7 @@ class MenuController extends Controller
         };
 
         return <<<PROMPT
+                    If the promt is too long to generate or there's a risk to maxs out , please return the first 1000 characters of the prompt.
                     Create a detailed menu plan for {$timePeriod} with the following requirements:
 
                     1. Menu Focus: {$focus}
