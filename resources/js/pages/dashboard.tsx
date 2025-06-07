@@ -34,6 +34,7 @@ interface Ingredient {
     is_active: boolean;
     amount: number;
     unit?: string;
+    estimated_waste?: number;
 }
 
 interface SimpleMenuItem {
@@ -258,22 +259,33 @@ const Dashboard: React.FC = () => {
                                         setGeneratedMenu(null);
                                         if (e.target.value) {
                                             try {
+                                                setIsGenerating(true);
                                                 const response = await axios.post('/api/ingredients/filter', {
                                                     timePeriod: e.target.value
                                                 });
-                                                setIngredients(response.data);
+                                                if (response.data?.data?.ingredients) {
+                                                    setIngredients(response.data.data.ingredients);
+                                                } else {
+                                                    console.error('Invalid response structure:', response.data);
+                                                    setError('Filtered ingredients data is invalid. Please try again.');
+                                                }
                                             } catch (err) {
                                                 console.error('Error filtering ingredients:', err);
                                                 setError('Failed to filter ingredients. Please try again later.');
+                                            } finally {
+                                                setIsGenerating(false);
                                             }
                                         } else {
                                             // Refetch main ingredients when the value is empty
                                             try {
+                                                setIsGenerating(true);
                                                 const response = await axios.get('/api/ingredients');
                                                 setIngredients(response.data);
                                             } catch (err) {
                                                 console.error('Error fetching ingredients:', err);
                                                 setError('Failed to fetch ingredients. Please try again later.');
+                                            } finally {
+                                                setIsGenerating(false);
                                             }
                                         }
                                     }}
@@ -284,6 +296,14 @@ const Dashboard: React.FC = () => {
                                     <option value="3-days">3 Days</option>
                                     <option value="7-days">7 Days</option>
                                 </select>
+                                {isGenerating && (
+                                    <div className="flex justify-center my-4">
+                                        <svg className="animate-spin h-8 w-8 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                    </div>
+                                )}
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                 {[...ingredients].sort((a, b) => {
@@ -299,12 +319,21 @@ const Dashboard: React.FC = () => {
                                         <h3 className="text-xl font-semibold mb-2 text-gray-900">{ingredient.name}</h3>
                                         <p className="text-gray-700 mb-2">{ingredient.description}</p>
                                         <div className="space-y-1">
-                                            <p className="text-green-700 font-semibold">
-                                                Amount: {ingredient.amount} {ingredient?.unit || 'kg'}
-                                            </p>
-                                            <p className="text-blue-700 font-semibold">
-                                                Price: {ingredient.price}
-                                            </p>
+                                            {ingredient.estimated_waste === undefined && (
+                                                <p className="text-green-700 font-semibold">
+                                                    Amount: {ingredient.amount} {ingredient?.unit || 'kg'}
+                                                </p>
+                                            )}
+                                            {ingredient.estimated_waste !== undefined && (
+                                                <p className="text-red-700 font-semibold">
+                                                    Estimated Waste: {ingredient.estimated_waste} {ingredient?.unit || 'kg'}
+                                                </p>
+                                            )}
+                                            {!ingredient.estimated_waste && (
+                                                <p className="text-blue-700 font-semibold">
+                                                    Price: {ingredient.price}
+                                                </p>
+                                            )}
                                         </div>
                                     </div>
                                 ))}

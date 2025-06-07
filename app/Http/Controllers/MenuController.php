@@ -133,7 +133,7 @@ class MenuController extends Controller
                 'messages' => [
                     [
                         'role' => 'system',
-                        'content' => 'You are a professional chef and menu planner. Your task is to create detailed menu plans based on available ingredients and specific requirements.'
+                        'content' => 'You are a professional chef and menu planner. Your task is to generate meals to optimize waste management.'
                     ],
                     [
                         'role' => 'user',
@@ -201,17 +201,88 @@ class MenuController extends Controller
                 ];
             });
 
-            // Filter out ingredients with remaining quantity > 0
-            $filteredIngredients = $remainingIngredients->filter(function ($ingredient) {
-                return $ingredient['remaining'] > 0;
-            });
+            // Use AI agent to estimate and filter ingredients
+            $prompt = $this->buildFilterPrompt($remainingIngredients, $timePeriod);
+            $response = OpenAI::chat()->create([
+                'model' => 'gpt-3.5-turbo',
+                'messages' => [
+                    [
+                        'role' => 'system',
+                        'content' => 'You are a professional chef and menu planner. Your task is to guess potential waste based on the given data'
+                    ],
+                    [
+                        'role' => 'user',
+                        'content' => $prompt
+                    ]
+                ],
+                'temperature' => 0.7,
+                'max_tokens' => 4096
+            ]);
 
-            return response()->json($filteredIngredients);
+            $filteredIngredients = json_decode($response->choices[0]->message->content, true);
+
+            // Ensure missing items are filled with default values, except for estimated_waste
+            $filteredIngredients['ingredients'] = array_map(function ($ingredient) {
+                return [
+                    'id' => $ingredient['id'] ?? '',
+                    'name' => $ingredient['name'] ?? '',
+                    'remaining' => $ingredient['remaining'] ?? 0,
+                    'unit' => $ingredient['unit'] ?? 'kg',
+                    'estimated_waste' => $ingredient['estimated_waste'] ?? 0
+                ];
+            }, $filteredIngredients['ingredients'] ?? []);
+
+            return response()->json([
+                'message' => 'Ingredients filtered successfully',
+                'data' => [
+                    'timePeriod' => $request->timePeriod,
+                    'status' => 'filtered',
+                    'ingredients' => $filteredIngredients['ingredients'] ?? []
+                ]
+            ]);
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Error filtering ingredients',
                 'error' => $e->getMessage()
             ], 500);
         }
+    }
+
+    private function buildFilterPrompt($remainingIngredients, $timePeriod): string
+    {
+        $ingredientsList = $remainingIngredients->map(function ($ingredient) {
+            return "- {$ingredient['name']}: {$ingredient['remaining']} {$ingredient['unit']}";
+        })->join("\n");
+
+        return <<<PROMPT
+                    Determine potential waste based on sales estimation for {$timePeriod} with the following data:
+
+                    1. Available Ingredients:
+                    {$ingredientsList}
+
+                    Please analyze the data to:
+                    - Identify ingredients that are likely to go to waste based on current sales trends
+                    - Estimate the quantity of each ingredient that might remain unused
+                    - Suggest potential actions to minimize waste
+
+                    For each ingredient, please specify:
+                    - Remaining quantity
+                    - Estimated waste based on sales (ensure this is a non-zero value if the ingredient is likely to go to waste)
+
+                    Please format the response as a JSON object with the following structure:
+                    {
+                        "ingredients": [
+                            {
+                                "id": "",
+                                "name": "",
+                                "remaining": 0,
+                                "unit": "",
+                                "estimated_waste": 0
+                            }
+                        ]
+                    }
+
+                    Ensure the response is a valid JSON object that can be parsed by the UI.
+                    PROMPT;
     }
 } 
