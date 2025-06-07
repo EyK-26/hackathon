@@ -77,4 +77,53 @@ INSERT INTO food_ingredient (food_id, ingredient_id, quantity) VALUES
 (5, 18, 0.3), -- Potato
 (5, 3, 0.01), -- Salt
 (5, 4, 0.01), -- Black Pepper
-(5, 8, 0.02); -- Basil 
+(5, 8, 0.02); -- Basil
+
+-- Insert sales data for 90% of foods (9 out of 10 foods)
+-- Each food has 2-4 sales records with quantities between 1-3
+-- Sales are distributed over the last two weeks
+INSERT INTO sales (food_id, quantity, sold_at) VALUES
+-- Chicken Pasta Alfredo (ID: 1)
+(1, 2, datetime('now', '-2 days')),
+(1, 1, datetime('now', '-5 days')),
+(1, 3, datetime('now', '-8 days')),
+
+-- Margherita Pizza (ID: 2)
+(2, 3, datetime('now', '-1 day')),
+(2, 2, datetime('now', '-4 days')),
+(2, 1, datetime('now', '-10 days')),
+
+-- Caesar Salad (ID: 3)
+(3, 1, datetime('now', '-3 days')),
+(3, 2, datetime('now', '-7 days')),
+(3, 2, datetime('now', '-12 days')),
+
+-- Beef Stir Fry (ID: 4)
+(4, 3, datetime('now', '-2 days')),
+(4, 2, datetime('now', '-6 days')),
+(4, 1, datetime('now', '-9 days')),
+
+-- Vegetable Soup (ID: 5)
+(5, 1, datetime('now', '-4 days')),
+(5, 2, datetime('now', '-8 days')),
+(5, 3, datetime('now', '-11 days')),
+
+-- Grilled Salmon (ID: 6)
+(6, 2, datetime('now', '-3 days')),
+(6, 1, datetime('now', '-7 days')),
+(6, 2, datetime('now', '-13 days')),
+
+-- Chicken Curry (ID: 7)
+(7, 3, datetime('now', '-1 day')),
+(7, 2, datetime('now', '-5 days')),
+(7, 1, datetime('now', '-10 days')),
+
+-- Greek Salad (ID: 8)
+(8, 1, datetime('now', '-2 days')),
+(8, 2, datetime('now', '-6 days')),
+(8, 3, datetime('now', '-9 days')),
+
+-- Beef Burger (ID: 9)
+(9, 2, datetime('now', '-4 days')),
+(9, 3, datetime('now', '-8 days')),
+(9, 1, datetime('now', '-12 days')); 

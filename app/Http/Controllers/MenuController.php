@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Food;
 use App\Models\Ingredient;
+use App\Models\Sale;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use OpenAI\Laravel\Facades\OpenAI;
 
