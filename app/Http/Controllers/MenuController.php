@@ -98,25 +98,20 @@ class MenuController extends Controller
 
                     For each meal, please specify:
                     - Required ingredients
-                    - Estimated cost per serving
+                    - Estimated cost per serving (as a number, without any currency sign)
 
                     Please format the response as a JSON object with the following structure:
                     {
-                        "menu": [
+                        "foods": [
                             {
-                                "day": "Day 1",
-                                "meals": [
+                                "name": "",
+                                "price": 0,
+                                "ingredients": [
                                     {
+                                        "id": "",
                                         "name": "",
-                                        "ingredients": [
-                                            {
-                                                "id": "" // id of the ingredient in the database,
-                                                "name": "",
-                                                "amount": "",
-                                                "price": ""
-                                            }
-                                        ],
-                                        "estimated_cost": ""
+                                        "quantity": "",
+                                        "unit": ""
                                     }
                                 ]
                             }
@@ -157,7 +152,7 @@ class MenuController extends Controller
                 'data' => [
                     'timePeriod' => $request->timePeriod,
                     'status' => 'generated',
-                    'menu' => $menuData['menu'] ?? [],
+                    'foods' => $menuData['foods'] ?? [],
                 ]
             ]);
         } catch (\Exception $e) {

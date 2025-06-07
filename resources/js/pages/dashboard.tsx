@@ -37,32 +37,25 @@ interface Ingredient {
 
 interface SimpleMenuItem {
     name: string;
-    estimated_cost: string;
+    price: number;
     ingredients: {
-        id: number;
+        id: number | null;
         name: string;
-        amount: number | string;
-        price: number | string;
+        quantity: number;
+        unit: string;
     }[];
 }
 
-
-interface MenuDay {
-    day: string;
-    meals: SimpleMenuItem[];
-}
-
 interface MenuResponse {
-    menu: MenuDay[];
+    foods: SimpleMenuItem[];
 }
 
 interface ApiResponse {
     message: string;
     data: {
-        analysisType: string;
         timePeriod: string;
         status: string;
-        menu: MenuDay[];
+        foods: SimpleMenuItem[];
     };
 }
 
@@ -81,7 +74,6 @@ const Dashboard: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [timePeriod, setTimePeriod] = useState('');
-    const [isGenerating, setIsGenerating] = useState(false);
     const [generatedMenu, setGeneratedMenu] = useState<MenuResponse | null>(null);
 
     useEffect(() => {
@@ -112,14 +104,13 @@ const Dashboard: React.FC = () => {
 
     const handleGenerateMenu = async () => {
         try {
-            setIsGenerating(true);
             setError(null);
             const response = await axios.post<ApiResponse>('/api/menu/generate', {
                 timePeriod
             });
 
-            if (response.data?.data?.menu) {
-                setGeneratedMenu({ menu: response.data.data.menu });
+            if (response.data?.data?.foods) {
+                setGeneratedMenu({ foods: response.data.data.foods });
             } else {
                 console.error('Invalid response structure:', response.data);
                 setError('Generated menu data is invalid. Please try again.');
@@ -127,8 +118,6 @@ const Dashboard: React.FC = () => {
         } catch (err) {
             console.error('Error generating menu:', err);
             setError('Failed to generate menu. Please try again later.');
-        } finally {
-            setIsGenerating(false);
         }
     };
 
@@ -179,6 +168,7 @@ const Dashboard: React.FC = () => {
                                             onChange={(e) => setTimePeriod(e.target.value)}
                                             className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-900"
                                         >
+                                            <option value="">Select Time Period</option>
                                             <option value="1-day">1 Day</option>
                                             <option value="3-days">3 Days</option>
                                             <option value="7-days">7 Days</option>
@@ -187,18 +177,10 @@ const Dashboard: React.FC = () => {
                                     <div className="flex items-end">
                                         <button
                                             onClick={handleGenerateMenu}
-                                            disabled={isGenerating || !timePeriod}
-                                            className="w-full sm:w-auto bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                            disabled={!timePeriod}
+                                            className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
                                         >
-                                            {isGenerating ? (
-                                                <div className="flex items-center">
-                                                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                                    </svg>
-                                                    <span className="text-gray-900">Generating...</span>
-                                                </div>
-                                            ) : <span className="text-gray-900">Generate Menu</span>}
+                                            Generate Menu
                                         </button>
                                     </div>
                                 </div>
@@ -210,28 +192,21 @@ const Dashboard: React.FC = () => {
                             <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-8">
                                 <div className="p-6">
                                     <div className="space-y-6">
-                                        {generatedMenu.menu?.map((day, dayIndex) => (
-                                            <div key={dayIndex} className="border rounded-lg p-4">
-                                                <h3 className="text-xl font-semibold mb-3 text-gray-900">{day.day}</h3>
-                                                <div className="space-y-4">
-                                                    {day.meals?.map((meal, mealIndex) => (
-                                                        <div key={mealIndex} className="bg-gray-50 p-4 rounded-md">
-                                                            <h4 className="text-lg font-medium mb-2 text-gray-900">{meal.name}</h4>
-                                                            <div className="mb-2">
-                                                                <h5 className="font-medium text-gray-900">Ingredients:</h5>
-                                                                <ul className="list-disc list-inside">
-                                                                    {meal.ingredients?.map((ingredient, ingIndex) => (
-                                                                        <li key={ingIndex} className="text-gray-700">
-                                                                            {ingredient.name} - Amount: {ingredient.amount}, Price: {ingredient.price}
-                                                                        </li>
-                                                                    ))}
-                                                                </ul>
-                                                            </div>
-                                                            <div className="text-sm text-gray-600">
-                                                                <p>Estimated Cost: ${meal.estimated_cost}</p>
-                                                            </div>
-                                                        </div>
-                                                    ))}
+                                        {generatedMenu.foods?.map((food, foodIndex) => (
+                                            <div key={foodIndex} className="bg-gray-50 p-4 rounded-md">
+                                                <h4 className="text-lg font-medium mb-2 text-gray-900">{food.name}</h4>
+                                                <div className="mb-2">
+                                                    <h5 className="font-medium text-gray-900">Ingredients:</h5>
+                                                    <ul className="list-disc list-inside">
+                                                        {food.ingredients?.map((ingredient, ingIndex) => (
+                                                            <li key={ingIndex} className="text-gray-700">
+                                                                {ingredient.name} - Quantity: {ingredient.quantity} {ingredient.unit}
+                                                            </li>
+                                                        ))}
+                                                    </ul>
+                                                </div>
+                                                <div className="text-sm text-gray-600">
+                                                    <p>Price: {food.price}</p>
                                                 </div>
                                             </div>
                                         ))}
