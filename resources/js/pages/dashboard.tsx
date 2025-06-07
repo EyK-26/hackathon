@@ -169,7 +169,10 @@ const Dashboard: React.FC = () => {
                                         <select
                                             id="timePeriod"
                                             value={timePeriod}
-                                            onChange={(e) => setTimePeriod(e.target.value)}
+                                            onChange={(e) => {
+                                                setTimePeriod(e.target.value);
+                                                setGeneratedMenu(null);
+                                            }}
                                             className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-900"
                                         >
                                             <option value="">Select Time Period</option>

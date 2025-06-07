@@ -34,15 +34,15 @@ class MenuController extends Controller
         })->join("\n");
 
         // Determine meal frequency based on time period
-        $mealsPerDay = match($timePeriod) {
+        $mealThrashold = match($timePeriod) {
             '1-day' => 1,
             '3-days' => 3,
             '7-days' => 7,
             default => 7
         };
         
-        // Fetch sales from the last $mealsPerDay days
-        $soldIngredients = Sale::where('sold_at', '>=', Carbon::now()->subDays($mealsPerDay))->get()
+        // Fetch sales from the last $mealThrashold days
+        $soldIngredients = Sale::where('sold_at', '>=', Carbon::now()->subDays($mealThrashold))->get()
             ->flatMap(function ($sale) {
                 return $sale->food->ingredients->map(function ($ingredient) use ($sale) {
                     return [
@@ -66,7 +66,7 @@ class MenuController extends Controller
         });
 
         // Get the top 5 unused ingredients for waste management
-        $topUnusedIngredients = $remainingIngredients->sortByDesc('remaining')->take(5);
+        $topUnusedIngredients = $remainingIngredients->sortByDesc('remaining');
 
         // Format waste management ingredients list
         $wasteManagementList = $topUnusedIngredients->map(function ($ingredient) {
@@ -76,25 +76,24 @@ class MenuController extends Controller
         return <<<PROMPT
                     If the promt is too long to generate or there's a risk to max out, please return the first 1000 characters of the prompt.
                     And if you decide to return the first 1000 characters please do not forget to fill the menu array below. It's mapped on the frontend.
-                    Create a detailed menu plan for {$timePeriod} with the following requirements:
+                    Make sure that foods array is not empty.
 
-                    1. Number of meals to plan: {$mealsPerDay}
+                    1. Number of meals to plan not more than 5.
                     2. Available Ingredients:
                     {$ingredientsList}
 
                     3. I don't want to create again existing food items. Existing Food Items that we already have in the menu are:
                     {$foodsList}
 
-                    4. Top 5 Unused Ingredients (prioritize these in menu planning):
+                    4. All Remaining Ingredients (prioritize these in menu planning):
                     {$wasteManagementList}
 
                     Please generate a menu that:
                     - Uses the available ingredients efficiently
                     - Creates a good mix of existing and new dishes
-                    - Ensures variety and balance in the menu
-                    - Takes into account seasonal availability
+                    - Takes into account seasonal availability of new ingredients
                     - Prioritizes ingredients that need to be used soon
-                    - Uses the top 5 unused ingredients to optimize waste management
+                    - Uses the remaining ingredients to optimize waste management
 
                     For each meal, please specify:
                     - Required ingredients
@@ -108,7 +107,7 @@ class MenuController extends Controller
                                 "price": 0,
                                 "ingredients": [
                                     {
-                                        "id": "",
+                                        "id": "", // with respective id in DB, if not in the remaining ingredients list, use null
                                         "name": "",
                                         "quantity": "",
                                         "unit": ""
