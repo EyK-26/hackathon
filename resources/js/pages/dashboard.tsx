@@ -241,7 +241,7 @@ const Dashboard: React.FC = () => {
                                     <div key={food.id} className="bg-white p-6 rounded-lg shadow-md">
                                         <h3 className="text-xl font-semibold mb-2 text-gray-900">{food.name}</h3>
                                         <p className="text-gray-700 mb-2">{food.description}</p>
-                                        <p className="text-blue-700 font-semibold">${food.price}</p>
+                                        <p className="text-blue-700 font-semibold">{food.price}</p>
                                     </div>
                                 ))}
                             </div>
@@ -268,7 +268,7 @@ const Dashboard: React.FC = () => {
                                                 Amount: {ingredient.amount} {ingredient?.unit || 'kg'}
                                             </p>
                                             <p className="text-blue-700 font-semibold">
-                                                Price: ${ingredient.price}
+                                                Price: {ingredient.price}
                                             </p>
                                         </div>
                                     </div>
