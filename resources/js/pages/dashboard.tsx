@@ -251,7 +251,15 @@ const Dashboard: React.FC = () => {
                         <div>
                             <h2 className="text-2xl font-semibold mb-4">Recent Ingredients</h2>
                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                {[...ingredients].sort((a, b) => Number(b.amount) - Number(a.amount)).map((ingredient) => (
+                                {[...ingredients].sort((a, b) => {
+                                    const unitOrder: Record<string, number> = { 'kg': 2, 'g': 1, 'liter': 2, 'ml': 1 };
+                                    const aUnit = a.unit || 'kg';
+                                    const bUnit = b.unit || 'kg';
+                                    if (aUnit === bUnit) {
+                                        return Number(b.amount || 0) - Number(a.amount || 0);
+                                    }
+                                    return (unitOrder[bUnit] || 0) - (unitOrder[aUnit] || 0);
+                                }).map((ingredient) => (
                                     <div key={ingredient.id} className="bg-white p-6 rounded-lg shadow-md">
                                         <h3 className="text-xl font-semibold mb-2 text-gray-900">{ingredient.name}</h3>
                                         <p className="text-gray-700 mb-2">{ingredient.description}</p>
