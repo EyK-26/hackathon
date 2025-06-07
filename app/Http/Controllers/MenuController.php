@@ -14,7 +14,7 @@ class MenuController extends Controller
 {
     private $prompt;
 
-    private function generatePrompt(string $analysisType, string $timePeriod): string
+    private function generatePrompt(string $timePeriod): string
     {
         // Fetch all available ingredients and foods
         $ingredients = Ingredient::with('foods')->get();
@@ -33,20 +33,11 @@ class MenuController extends Controller
             return "- {$food->name} (ID: {$food->id}): {$ingredients}";
         })->join("\n");
 
-        // Determine menu focus based on analysis type
-        $focus = match($analysisType) {
-            'eco-friendly' => 'focus on sustainable and environmentally friendly ingredients, minimizing food waste and using seasonal produce',
-            'customer-pleaser' => 'focus on popular and well-liked dishes, considering customer preferences and trending food items',
-            'cost-effective' => 'focus on cost-efficient ingredients and dishes while maintaining quality and taste',
-            'surprise-me' => 'create an innovative and diverse menu that combines different cuisines and cooking styles',
-            default => 'create a balanced menu'
-        };
-
         // Determine meal frequency based on time period
         $mealsPerDay = match($timePeriod) {
-            '1-week' => 7,
-            '2-weeks' => 14,
-            '1-month' => 30,
+            '1-day' => 1,
+            '3-days' => 3,
+            '7-days' => 7,
             default => 7
         };
         
@@ -63,37 +54,50 @@ class MenuController extends Controller
                 });
             });
 
-        // TODO count quantity of remaining ingredients, 
-        // Ingredients in DB minus sold ingredients
+        // Calculate remaining inventory
+        $remainingIngredients = Ingredient::all()->map(function ($ingredient) use ($soldIngredients) {
+            $soldQuantity = $soldIngredients->where('id', $ingredient->id)->sum('quantity');
+            return [
+                'id' => $ingredient->id,
+                'name' => $ingredient->name,
+                'remaining' => $ingredient->amount - $soldQuantity,
+                'unit' => $ingredient->unit,
+            ];
+        });
+
+        // Get the top 5 unused ingredients for waste management
+        $topUnusedIngredients = $remainingIngredients->sortByDesc('remaining')->take(5);
+
+        // Format waste management ingredients list
+        $wasteManagementList = $topUnusedIngredients->map(function ($ingredient) {
+            return "- {$ingredient['name']} (ID: {$ingredient['id']}): {$ingredient['remaining']} {$ingredient['unit']}";
+        })->join("\n");
 
         return <<<PROMPT
                     If the promt is too long to generate or there's a risk to max out, please return the first 1000 characters of the prompt.
                     And if you decide to return the first 1000 characters please do not forget to fill the menu array below. It's mapped on the frontend.
                     Create a detailed menu plan for {$timePeriod} with the following requirements:
 
-                    1. Menu Focus: {$focus}
-                    2. Number of meals to plan: {$mealsPerDay}
-                    3. Available Ingredients:
+                    1. Number of meals to plan: {$mealsPerDay}
+                    2. Available Ingredients:
                     {$ingredientsList}
 
-                    4. I don't want to create again existing food items. Existing Food Items that we already have in the menu are:
+                    3. I don't want to create again existing food items. Existing Food Items that we already have in the menu are:
                     {$foodsList}
+
+                    4. Top 5 Unused Ingredients (prioritize these in menu planning):
+                    {$wasteManagementList}
 
                     Please generate a menu that:
                     - Uses the available ingredients efficiently
                     - Creates a good mix of existing and new dishes
                     - Ensures variety and balance in the menu
-                    - Considers the specified focus area
-                    - Provides a good mix of different cuisines and cooking styles
                     - Takes into account seasonal availability
-                    - Ensures nutritional balance
+                    - Prioritizes ingredients that need to be used soon
+                    - Uses the top 5 unused ingredients to optimize waste management
 
                     For each meal, please specify:
-                    - Main dish
-                    - Side dishes
                     - Required ingredients
-                    - Preparation time
-                    - Difficulty level
                     - Estimated cost per serving
 
                     Please format the response as a JSON object with the following structure:
@@ -124,12 +128,11 @@ class MenuController extends Controller
     public function generateMenu(Request $request): JsonResponse
     {
         $request->validate([
-            'analysisType' => 'required|string|in:eco-friendly,customer-pleaser,cost-effective,surprise-me',
-            'timePeriod' => 'required|string|in:1-week,2-weeks,1-month'
+            'timePeriod' => 'required|string|in:1-day,3-days,7-days'
         ]);
 
         try {
-            $this->prompt = $this->generatePrompt($request->analysisType, $request->timePeriod);
+            $this->prompt = $this->generatePrompt($request->timePeriod);
 
             $response = OpenAI::chat()->create([
                 'model' => 'gpt-3.5-turbo',
@@ -144,7 +147,7 @@ class MenuController extends Controller
                     ]
                 ],
                 'temperature' => 0.7,
-                'max_tokens' => 4000
+                'max_tokens' => 4096
             ]);
 
             $menuData = json_decode($response->choices[0]->message->content, true);
@@ -152,7 +155,6 @@ class MenuController extends Controller
             return response()->json([
                 'message' => 'Menu generated successfully',
                 'data' => [
-                    'analysisType' => $request->analysisType,
                     'timePeriod' => $request->timePeriod,
                     'status' => 'generated',
                     'menu' => $menuData['menu'] ?? [],

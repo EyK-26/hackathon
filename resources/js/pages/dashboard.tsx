@@ -102,8 +102,7 @@ const Dashboard: React.FC = () => {
     const [analysis, setAnalysis] = useState<Analysis | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [analysisType, setAnalysisType] = useState<string>('');
-    const [timePeriod, setTimePeriod] = useState<string>('');
+    const [timePeriod, setTimePeriod] = useState('');
     const [isGenerating, setIsGenerating] = useState(false);
     const [generatedMenu, setGeneratedMenu] = useState<MenuResponse | null>(null);
 
@@ -138,7 +137,6 @@ const Dashboard: React.FC = () => {
             setIsGenerating(true);
             setError(null);
             const response = await axios.post<ApiResponse>('/api/menu/generate', {
-                analysisType,
                 timePeriod
             });
 
@@ -154,16 +152,6 @@ const Dashboard: React.FC = () => {
         } finally {
             setIsGenerating(false);
         }
-    };
-
-    const handleAnalysisTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        setAnalysisType(e.target.value);
-        setGeneratedMenu(null);
-    };
-
-    const handleTimePeriodChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        setTimePeriod(e.target.value);
-        setGeneratedMenu(null);
     };
 
     return (
@@ -204,42 +192,24 @@ const Dashboard: React.FC = () => {
                                 <h2 className="text-2xl font-semibold text-gray-900 mb-4">Generate Menu</h2>
                                 <div className="flex flex-col sm:flex-row gap-4 mb-4">
                                     <div className="flex-1">
-                                        <label htmlFor="analysisType" className="block text-sm font-medium text-gray-700 mb-1">
-                                            Menu Type
-                                        </label>
-                                        <select
-                                            id="analysisType"
-                                            value={analysisType}
-                                            onChange={handleAnalysisTypeChange}
-                                            className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-white text-gray-900"
-                                        >
-                                            <option value="">Select Menu Type</option>
-                                            <option value="eco-friendly">Eco-Friendly</option>
-                                            <option value="customer-pleaser">Customer Pleaser</option>
-                                            <option value="cost-effective">Cost-Effective</option>
-                                            <option value="surprise-me">Surprise Me</option>
-                                        </select>
-                                    </div>
-                                    <div className="flex-1">
                                         <label htmlFor="timePeriod" className="block text-sm font-medium text-gray-700 mb-1">
                                             Time Period
                                         </label>
                                         <select
                                             id="timePeriod"
                                             value={timePeriod}
-                                            onChange={handleTimePeriodChange}
-                                            className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-white text-gray-900"
+                                            onChange={(e) => setTimePeriod(e.target.value)}
+                                            className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-900"
                                         >
-                                            <option value="">Select Time Period</option>
-                                            <option value="1-week">1 Week</option>
-                                            <option value="2-weeks">2 Weeks</option>
-                                            <option value="1-month">1 Month</option>
+                                            <option value="1-day">1 Day</option>
+                                            <option value="3-days">3 Days</option>
+                                            <option value="7-days">7 Days</option>
                                         </select>
                                     </div>
                                     <div className="flex items-end">
                                         <button
                                             onClick={handleGenerateMenu}
-                                            disabled={isGenerating || !analysisType || !timePeriod}
+                                            disabled={isGenerating || !timePeriod}
                                             className="w-full sm:w-auto bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                                         >
                                             {isGenerating ? (
@@ -306,10 +276,8 @@ const Dashboard: React.FC = () => {
                                                                     </ul>
                                                                 </div>
                                                             )}
-                                                            <div className="grid grid-cols-2 gap-4 text-sm text-gray-700">
-                                                                <p>Preparation Time: {meal.preparation_time}</p>
-                                                                <p>Difficulty: {meal.difficulty_level}</p>
-                                                                <p>Estimated Cost: {meal.estimated_cost}</p>
+                                                            <div className="text-sm text-gray-600">
+                                                                <p>Estimated Cost: ${meal.estimated_cost}</p>
                                                             </div>
                                                         </div>
                                                     ))}
