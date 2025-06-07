@@ -35,14 +35,9 @@ interface Ingredient {
     amount: number;
 }
 
-interface BaseMenuItem {
+interface SimpleMenuItem {
     name: string;
-    preparation_time: string;
-    difficulty_level: string;
     estimated_cost: string;
-}
-
-interface SimpleMenuItem extends BaseMenuItem {
     ingredients: {
         id: number;
         name: string;
@@ -51,22 +46,10 @@ interface SimpleMenuItem extends BaseMenuItem {
     }[];
 }
 
-interface DetailedMenuItem extends BaseMenuItem {
-    main_dish: string;
-    side_dishes: string[];
-    required_ingredients: {
-        id: number;
-        name: string;
-        amount: number | string;
-        price: number | string;
-    }[];
-}
-
-type MenuItem = SimpleMenuItem | DetailedMenuItem;
 
 interface MenuDay {
     day: string;
-    meals: MenuItem[];
+    meals: SimpleMenuItem[];
 }
 
 interface MenuResponse {
@@ -89,11 +72,6 @@ interface Analysis {
         foods: Food[];
         ingredients: Ingredient[];
     };
-}
-
-// Helper function to check if a MenuItem is DetailedMenuItem
-function isDetailedMenuItem(item: MenuItem): item is DetailedMenuItem {
-    return 'main_dish' in item && 'side_dishes' in item && 'required_ingredients' in item;
 }
 
 const Dashboard: React.FC = () => {
@@ -239,43 +217,16 @@ const Dashboard: React.FC = () => {
                                                     {day.meals?.map((meal, mealIndex) => (
                                                         <div key={mealIndex} className="bg-gray-50 p-4 rounded-md">
                                                             <h4 className="text-lg font-medium mb-2 text-gray-900">{meal.name}</h4>
-                                                            {isDetailedMenuItem(meal) ? (
-                                                                <>
-                                                                    <div className="mb-2">
-                                                                        <h5 className="font-medium text-gray-900">Main Dish:</h5>
-                                                                        <p className="text-gray-700">{meal.main_dish}</p>
-                                                                    </div>
-                                                                    <div className="mb-2">
-                                                                        <h5 className="font-medium text-gray-900">Side Dishes:</h5>
-                                                                        <ul className="list-disc list-inside">
-                                                                            {meal.side_dishes?.map((side, index) => (
-                                                                                <li key={index} className="text-gray-700">{side}</li>
-                                                                            ))}
-                                                                        </ul>
-                                                                    </div>
-                                                                    <div className="mb-2">
-                                                                        <h5 className="font-medium text-gray-900">Required Ingredients:</h5>
-                                                                        <ul className="list-disc list-inside">
-                                                                            {meal.required_ingredients?.map((ingredient, ingIndex) => (
-                                                                                <li key={ingIndex} className="text-gray-700">
-                                                                                    {ingredient.name} - Amount: {ingredient.amount}, Price: {ingredient.price}
-                                                                                </li>
-                                                                            ))}
-                                                                        </ul>
-                                                                    </div>
-                                                                </>
-                                                            ) : (
-                                                                <div className="mb-2">
-                                                                    <h5 className="font-medium text-gray-900">Ingredients:</h5>
-                                                                    <ul className="list-disc list-inside">
-                                                                        {meal.ingredients?.map((ingredient, ingIndex) => (
-                                                                            <li key={ingIndex} className="text-gray-700">
-                                                                                {ingredient.name} - Amount: {ingredient.amount}, Price: {ingredient.price}
-                                                                            </li>
-                                                                        ))}
-                                                                    </ul>
-                                                                </div>
-                                                            )}
+                                                            <div className="mb-2">
+                                                                <h5 className="font-medium text-gray-900">Ingredients:</h5>
+                                                                <ul className="list-disc list-inside">
+                                                                    {meal.ingredients?.map((ingredient, ingIndex) => (
+                                                                        <li key={ingIndex} className="text-gray-700">
+                                                                            {ingredient.name} - Amount: {ingredient.amount}, Price: {ingredient.price}
+                                                                        </li>
+                                                                    ))}
+                                                                </ul>
+                                                            </div>
                                                             <div className="text-sm text-gray-600">
                                                                 <p>Estimated Cost: ${meal.estimated_cost}</p>
                                                             </div>
