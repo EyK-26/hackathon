@@ -33,6 +33,7 @@ interface Ingredient {
     category_id: number;
     is_active: boolean;
     amount: number;
+    unit?: string;
 }
 
 interface SimpleMenuItem {
@@ -250,13 +251,13 @@ const Dashboard: React.FC = () => {
                         <div>
                             <h2 className="text-2xl font-semibold mb-4">Recent Ingredients</h2>
                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                {[...ingredients].sort((a, b) => b.amount - a.amount).map((ingredient) => (
+                                {[...ingredients].sort((a, b) => Number(b.amount) - Number(a.amount)).map((ingredient) => (
                                     <div key={ingredient.id} className="bg-white p-6 rounded-lg shadow-md">
                                         <h3 className="text-xl font-semibold mb-2 text-gray-900">{ingredient.name}</h3>
                                         <p className="text-gray-700 mb-2">{ingredient.description}</p>
                                         <div className="space-y-1">
                                             <p className="text-green-700 font-semibold">
-                                                Amount: {ingredient.amount} {ingredient.unit}
+                                                Amount: {ingredient.amount} {ingredient?.unit || 'kg'}
                                             </p>
                                             <p className="text-blue-700 font-semibold">
                                                 Price: ${ingredient.price}
