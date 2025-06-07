@@ -249,8 +249,43 @@ const Dashboard: React.FC = () => {
 
                         {/* Recent Ingredients */}
                         <div>
-                            <h2 className="text-2xl font-semibold mb-4">Recent Ingredients</h2>
-                           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <div className="flex justify-between items-center mb-4">
+                                <h2 className="text-2xl font-semibold">Recent Ingredients</h2>
+                                <select
+                                    value={timePeriod}
+                                    onChange={async (e) => {
+                                        setTimePeriod(e.target.value);
+                                        setGeneratedMenu(null);
+                                        if (e.target.value) {
+                                            try {
+                                                const response = await axios.post('/api/ingredients/filter', {
+                                                    timePeriod: e.target.value
+                                                });
+                                                setIngredients(response.data);
+                                            } catch (err) {
+                                                console.error('Error filtering ingredients:', err);
+                                                setError('Failed to filter ingredients. Please try again later.');
+                                            }
+                                        } else {
+                                            // Refetch main ingredients when the value is empty
+                                            try {
+                                                const response = await axios.get('/api/ingredients');
+                                                setIngredients(response.data);
+                                            } catch (err) {
+                                                console.error('Error fetching ingredients:', err);
+                                                setError('Failed to fetch ingredients. Please try again later.');
+                                            }
+                                        }
+                                    }}
+                                    className="rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-900"
+                                >
+                                    <option value="">Select Time Period</option>
+                                    <option value="1-day">1 Day</option>
+                                    <option value="3-days">3 Days</option>
+                                    <option value="7-days">7 Days</option>
+                                </select>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                 {[...ingredients].sort((a, b) => {
                                     const unitOrder: Record<string, number> = { 'kg': 2, 'g': 1, 'liter': 2, 'ml': 1 };
                                     const aUnit = a.unit || 'kg';

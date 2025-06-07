@@ -25,4 +25,7 @@ Route::get('/ingredients/{ingredient}', [IngredientController::class, 'show']);
 Route::get('/analyze', [AnalysisController::class, 'analyze']);
 
 // Menu Generation
-Route::post('/menu/generate', [MenuController::class, 'generateMenu']); 
+Route::post('/menu/generate', [MenuController::class, 'generateMenu']);
+
+// Filter ingredients
+Route::post('/ingredients/filter', [MenuController::class, 'filterIngredients']); 

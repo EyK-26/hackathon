@@ -161,4 +161,57 @@ class MenuController extends Controller
             ], 500);
         }
     }
+
+    public function filterIngredients(Request $request): JsonResponse
+    {
+        $request->validate([
+            'timePeriod' => 'required|string|in:1-day,3-days,7-days'
+        ]);
+
+        try {
+            $timePeriod = $request->timePeriod;
+            $mealThrashold = match($timePeriod) {
+                '1-day' => 1,
+                '3-days' => 3,
+                '7-days' => 7,
+                default => 7
+            };
+
+            // Fetch sales from the last $mealThrashold days
+            $soldIngredients = Sale::where('sold_at', '>=', Carbon::now()->subDays($mealThrashold))->get()
+                ->flatMap(function ($sale) {
+                    return $sale->food->ingredients->map(function ($ingredient) use ($sale) {
+                        return [
+                            'id' => $ingredient->id,
+                            'name' => $ingredient->name,
+                            'quantity' => $ingredient->pivot->quantity * $sale->quantity,
+                            'unit' => $ingredient->pivot->unit,
+                        ];
+                    });
+                });
+
+            // Calculate remaining inventory
+            $remainingIngredients = Ingredient::all()->map(function ($ingredient) use ($soldIngredients) {
+                $soldQuantity = $soldIngredients->where('id', $ingredient->id)->sum('quantity');
+                return [
+                    'id' => $ingredient->id,
+                    'name' => $ingredient->name,
+                    'remaining' => $ingredient->amount - $soldQuantity,
+                    'unit' => $ingredient->unit,
+                ];
+            });
+
+            // Filter out ingredients with remaining quantity > 0
+            $filteredIngredients = $remainingIngredients->filter(function ($ingredient) {
+                return $ingredient['remaining'] > 0;
+            });
+
+            return response()->json($filteredIngredients);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error filtering ingredients',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 } 
