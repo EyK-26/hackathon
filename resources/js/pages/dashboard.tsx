@@ -32,7 +32,6 @@ interface Ingredient {
     image: string;
     category_id: number;
     is_active: boolean;
-    longevity: number;
     amount: number;
 }
 
@@ -350,9 +349,6 @@ const Dashboard: React.FC = () => {
                                             </p>
                                             <p className="text-blue-700 font-semibold">
                                                 Price: ${ingredient.price}
-                                            </p>
-                                            <p className="text-gray-700">
-                                                Longevity: {ingredient.longevity} days
                                             </p>
                                         </div>
                                     </div>

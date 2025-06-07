@@ -3,9 +3,6 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use App\Models\Category;
-use App\Models\Ingredient;
-use App\Models\Food;
 
 class DatabaseSeeder extends Seeder
 {
@@ -14,10 +11,6 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        $this->call([
-            IngredientSeeder::class,
-            FoodSeeder::class,
-            UpdateFoodsAndIngredientsSeeder::class,
-        ]);
+        // Seeders have been replaced with real_data.sql
     }
 }
